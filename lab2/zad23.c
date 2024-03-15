@@ -75,7 +75,7 @@ int main()
         // printf("\n");
         switch(version)
 	{
-		case 0:
+		case 1:
                         while(conflicts < max_conflicts)
                         {
                                 if(queue_state(&deckA)==0)
@@ -87,7 +87,7 @@ int main()
                                 }
                                 else if (queue_state(&deckB)==0)
                                 {
-                                        printf("2\n%d",conflicts);
+                                        printf("2 %d",conflicts);
                                         return 0;
                                 }
                                 cardA = queue_pop(&deckA);
@@ -110,20 +110,24 @@ int main()
                                 conflicts++;
                         }
                         break;
-		case 1:
-                        while(conflicts < max_conflicts)
+		case 0:
+                        while(conflicts < max_conflicts && queue_state(&deckA)!=0 && queue_state(&deckB)!=0)
                         {
+                                // printf("\n%d : %d\n",cardA,cardB);
+                                // queue_print(&deckB);
+                                // printf("\n");
+                                // queue_print(&deckA);
                                 if(!war)
                                 {
-                                        if(queue_state(&deckA)==0)
+                                        if(queue_state(&deckA)==0 && queue_state(&tableA)==0)
                                         {
                                                 printf("3\n");
                                                 queue_print(&deckB);
                                                 return 0;
                                         }
-                                        else if (queue_state(&deckB)==0)
+                                        else if (queue_state(&deckB)==0&&queue_state(&tableB)==0)
                                         {
-                                                printf("2\n%d",conflicts);
+                                                printf("2 %d",conflicts);
                                                 return 0;
                                         }
                                         cardA = queue_pop(&deckA);
@@ -137,6 +141,7 @@ int main()
                                                 while(queue_state(&tableB)!=0)
                                                         queue_push(&deckA,queue_pop(&tableB));
                                                 war = 0;
+                                                conflicts++;
                                         }
                                         else if (cardA>>2 < cardB>>2)
                                         {
@@ -145,9 +150,11 @@ int main()
                                                 while(queue_state(&tableA)!=0)
                                                         queue_push(&deckB,queue_pop(&tableA));
                                                 war = 0;
+                                                conflicts++;
                                         }
                                         else
                                         {
+                                                conflicts++;
                                                 war = 1;
                                         }
                                 }
@@ -163,8 +170,26 @@ int main()
 			printf("Podaj liczbę 0 lub 1!");	
                         break;
         }
-        printf("0\n%d\n%d",queue_state(&deckA),queue_state(&deckB));
-	return 0;
+        while(queue_state(&tableB)!=0)
+                queue_push(&deckB,queue_pop(&tableB));
+        while(queue_state(&tableA)!=0)
+                queue_push(&deckA,queue_pop(&tableA));
+        if(queue_state(&deckA)==0 && queue_state(&tableA)==0)
+        {
+                printf("3\n");
+                queue_print(&deckB);
+                return 0;
+        }
+        else if (queue_state(&deckB)==0&&queue_state(&tableB)==0)
+        {
+                printf("2 %d",conflicts);
+                return 0;
+        }
+        if(conflicts==max_conflicts)
+                printf("0 %d %d",queue_state(&deckA),queue_state(&deckB));
+	else
+                printf("1 %d %d",queue_state(&deckA),queue_state(&deckB));
+        return 0;
 }
 
 #define CBUFF_SIZE  CARD_AMOUNT
@@ -201,6 +226,7 @@ int queue_state(struct Deck *deck)
 void queue_print(struct Deck *deck)
 {
         printf("%d ",deck->array[ deck->out ]);
+        if(deck->len>1)
         for(int i = deck->out+1;i != (deck->out+deck->len)%CBUFF_SIZE;i=(i+1)%CBUFF_SIZE)
         {
                 printf("%d ",deck->array[ i ]);
