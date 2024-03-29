@@ -14,7 +14,7 @@
 #define IN_LINE_COMMENT 1
 #define IN_BLOCK_COMMENT 2
 
-#define TEST 1 // 1 dla testowania, 0 dla automatycznej oceny
+#define TEST 0 // 1 dla testowania, 0 dla automatycznej oceny
 
 int count[MAX_DIGRAMS] = {0};
 int count2[MAX_CHARS] = {0};
@@ -48,21 +48,23 @@ int cmp_di(const void *a, const void *b)
 // (nc) in the text read from stream
 void wc(int *nl, int *nw, int *nc, FILE *stream)
 {
+    *nl = 0;
+    *nw = 0;
+    *nc = 0;
+    int flag = 0;
 	char character, prevch;
 	while ((character = fgetc(stream)) != EOF)
 	{
-		switch (character)
-		{
-		case ' ':
-			break;
-		case NEWLINE:
-			*nl += 1;
-			break;
-		default:
-			if (prevch == NEWLINE || prevch == ' ')
-				*nw += 1;
-			break;
-		}
+        if(character == '\n')
+            (*nl)++;
+        if(flag == 0 && character >= FIRST_CHAR && character <= LAST_CHAR){
+            flag = IN_WORD;
+            (*nw)++;
+        }
+
+        if(flag != 0 && (character == ' ' || character == '\n' || character == '\t')){
+            flag = 0;
+        }
 		*nc += 1;
 		prevch = character;
 	}
@@ -135,39 +137,6 @@ void char_count(int char_no, int *n_char, int *cnt, FILE *stream)
 // in the sorted list. Set digram[2] to its cardinality.
 void digram_count(int digram_no, int digram[], FILE *stream)
 {
-	void swap(int *p1, int *p2)
-	{
-		int temp;
-		temp = *p1;
-		*p1 = *p2;
-		*p2 = temp;
-	}
-
-	int partition(int arr[], int low, int high)
-	{
-		int pivot = arr[high];
-		int i = (low - 1);
-
-		for (int j = low; j <= high; j++)
-		{
-			if (cmp_di(&arr[j], &pivot) > 0)
-			{
-				i++;
-				swap(&arr[i], &arr[j]);
-			}
-		}
-		swap(&arr[i + 1], &arr[high]);
-		return (i + 1);
-	}
-	void qsort(int arr[], int low, int high)
-	{
-		if (low < high)
-		{
-			int pi = partition(arr, low, high);
-			qsort(arr, low, pi - 1);
-			qsort(arr, pi + 1, high);
-		}
-	}
 	char ch, prevchar = 0;
 	int digrams[MAX_DIGRAMS];
 	for (int i = 0; i < MAX_CHARS; i++)
@@ -181,13 +150,13 @@ void digram_count(int digram_no, int digram[], FILE *stream)
 	{
 		// printf("%d %d\n", ((int)prevchar - FIRST_CHAR) * MAX_CHARS, (int)((int)ch - FIRST_CHAR));
 		if (prevchar != 0 && (prevchar - FIRST_CHAR) * MAX_CHARS > 0 && ch - FIRST_CHAR > 0)
-			count[(prevchar - FIRST_CHAR) * MAX_CHARS + ch - FIRST_CHAR] += 1;
+			count[((int)prevchar - FIRST_CHAR) * MAX_CHARS + (int)ch - FIRST_CHAR] += 1;
 		prevchar = ch;
 	}
-	qsort(digrams, 0, MAX_CHARS - 1);
-	digram[0] = digrams[MAX_DIGRAMS - digram_no] / MAX_CHARS;
-	digram[1] = digrams[MAX_DIGRAMS - digram_no] % MAX_CHARS;
-	digram[2] = count[digram[0] / MAX_CHARS + digram[1] % MAX_CHARS];
+	qsort(digrams, MAX_DIGRAMS, sizeof(int),cmp_di);
+	digram[0] = digrams[digram_no - 1] / MAX_CHARS + FIRST_CHAR;
+	digram[1] = digrams[digram_no - 1] % MAX_CHARS + FIRST_CHAR;
+	digram[2] = count[digrams[digram_no - 1]];
 }
 
 // Count block and line comments in the text read from stream. Set

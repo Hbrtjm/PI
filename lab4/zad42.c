@@ -11,91 +11,105 @@
 #define MAX_ID_LEN 64
 #define MAX_IDS 1024
 
-#define TEST 1 // 1 - dla testowania,  0 - dla automatycznej oceny
+#define TEST 0  // 1 - dla testowania,  0 - dla automatycznej oceny
 
-int index_cmp(const void *, const void *);
-int cmp(const void *, const void *);
+int index_cmp(const void*, const void*);
+int cmp(const void*, const void*);
 
 char tab[MAX_IDS][MAX_ID_LEN];
 
-char *keywords[] = {
-    "auto", "break", "case", "char",
-    "const", "continue", "default", "do",
-    "double", "else", "enum", "extern",
-    "float", "for", "goto", "if",
-    "int", "long", "register", "return",
-    "short", "signed", "sizeof", "static",
-    "struct", "switch", "typedef", "union",
-    "unsigned", "void", "volatile", "while"};
+#define MAX_KEYWORDS 32
 
-int is_alfa(char a)
-{
-    return (a <= 'z' && a >= 'a') || (a >= 'A' && a <= 'Z') || (a == '_');
-}
+char *keywords[MAX_KEYWORDS] = {
+	"auto", "break", "case", "char",
+	"const", "continue", "default", "do",
+	"double", "else", "enum", "extern",
+	"float", "for", "goto", "if",
+	"int", "long", "register", "return",
+	"short", "signed", "sizeof", "static",
+	"struct", "switch", "typedef", "union",
+	"unsigned", "void", "volatile", "while"
+};
 
-int is_num(char a)
-{
-    return (a >= '0' && a <= '9');
-}
+#define FIRST_NUMBER (int)'0'
+#define LAST_NUMBER (int)'9'
 
-int is_alfanum(char a)
-{
-    return is_alfa(a) || is_num(a);
-}
+#define FIRST_BIG_LETTER (int)'A'
+#define LAST_BIG_LETTER (int)'Z'
 
-int is_keyword(char word[])
-{
-    for (int i = 0; i < MAX_ID_LEN; i++)
-    {
-        if (cmp(word, keywords[i]))
-        {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-int valid(char word[], int length)
-{
-    if (!is_alfa(word[0]))
-    {
-        return 0;
-    }
-    for (int i = 0; i < length; i++)
-    {
-        if (!is_alfanum(word[1]))
-        {
-            return 0;
-        }
-    }
-    return 1;
-}
+#define FIRST_SMALL_LETTER (int)'a'
+#define LAST_SMALL_LETTER (int)'z'
 
 int find_idents(FILE *stream)
 {
-    int indents = 0;
-    char word[2048];
-    while (fscanf(stream, " %2047s", word) == 1)
-    {
-        if (!is_keyword(word) && valid(word, 2048))
-        {
-            indents++;
+    char c = (char)fgetc(stream);
+    char current_string[MAX_ID_LEN] = {0};
+    int flag = 0;
+    int id_counter = 0;
+    int total_ids = 0;
+    while(!feof(stream)){
+        if(flag == 0 && c == '/'){
+            c = (char)fgetc(stream);
+            if(c == '/'){
+                flag = IN_LINE_COMMENT;
+            }
+            else if(c == '*'){
+                flag = IN_BLOCK_COMMENT;
+            }
+        } else if(flag == IN_LINE_COMMENT && ( c == '\n' || c == '\r')) {
+            flag = 0;
+        } else if(flag == IN_BLOCK_COMMENT && c == '*'){
+            c = (char)fgetc(stream);
+            if(c == '/')
+                flag = 0;
         }
+        if(c == '"' || c == '\''){
+            if (flag == 0)
+                flag = IN_STRING;
+            else if(flag == IN_STRING) {
+                flag = 0;
+            }
+        }
+
+        if (flag != IN_LINE_COMMENT && flag != IN_BLOCK_COMMENT && flag != IN_STRING){
+            if( (c >= FIRST_BIG_LETTER && c <= LAST_BIG_LETTER) ||
+                (c >= FIRST_SMALL_LETTER && c <= LAST_SMALL_LETTER) ||
+                (c >= FIRST_NUMBER && c <= LAST_NUMBER) || c == '_') {
+                current_string[id_counter++] = c;
+            } else {
+                if(id_counter != 0){
+                    int ok = 1;
+
+                    for (int i = 0; i < MAX_KEYWORDS; i++){
+                        if(strcmp(keywords[i], current_string) == 0) {
+                            ok = 0;
+                            break;
+                        }
+                    }
+
+                    for(int i = 0; i < total_ids; i++){
+                        if(strcmp(tab[i], current_string) == 0) {
+                            ok = 0;
+                            break;
+                        }
+                    }
+
+                    if(current_string[0] <= LAST_NUMBER)
+                        ok = 0;
+
+                    if(ok == 1)
+                        strcpy(tab[total_ids++], current_string);
+
+                    memset(current_string, 0, MAX_ID_LEN*sizeof(char));
+                    id_counter = 0;
+                }
+            }
+        }
+
+        c = (char)fgetc(stream);
     }
-}
 
-int cmp(const void *first_arg, const void *second_arg)
-{
-    char *a = *(char **)first_arg;
-    char *b = *(char **)second_arg;
-    return strcmp(a, b);
-}
-
-int index_cmp(const void *first_arg, const void *second_arg)
-{
-    int a = *(int *)first_arg;
-    int b = *(int *)second_arg;
-    return strcmp(tab[a], tab[b]);
+    return total_ids;
 }
 
 int main(void)
