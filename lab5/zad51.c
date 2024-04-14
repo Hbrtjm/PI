@@ -14,13 +14,43 @@
 
 // n lancuchów wskazywanych w tablicy wskaznikow ptab kopiuje do tablicy tablic t2D   
 void n_str_copy(char t2D[][STRLEN_MAX], char *ptab[], size_t n) {
+  int j;
+  for(int i = 0;i < n;i++)
+  {
+    j = 0;
+    while(ptab[i][j] != 0)
+    {
+      t2D[i][j] = ptab[i][j]; 
+    }
+    t2D[][j+1] = 0;
+  }
 }
 
 int compar(const void *p1, const void *p2) {
+  char *a1 = (char *)p1;
+  char *a2 = (char *)p2;
+  strcmp(a1,a2);
+  // int a = 0,b = 0;
+  // while(a1[a])a++;
+  // while(a2[b])b++;
+  // a = a > b ? b : a;
+  // for(int i = 0;i < a;i++)
+  // {
+  //   if(a1[i] > a2[i])
+  //   {
+  //     return a1;
+  //   }
+  //   else if(a1[i] < a2[i])
+  //   {
+  //     return a2;
+  //   }
+  // }
+  // return a1;
 }
 
 // sortuje alfabetycznie n lancuchow wskazywanych w tablicy wskaznikow t  
 void ptab_sort(char *ptab[], size_t n) {
+  qsort(ptab,n,sizeof(char),compar);
 }
 
 // Porzadek odwrotny do alfabetycznego lancuchow zapisanych w tablicy t2D zapisuje w tablicy indices
@@ -32,10 +62,24 @@ void t2D_sort(const char t2D[][STRLEN_MAX], size_t indices[], size_t n) {
 // Funkcja wypisuje w osobnych liniach łańcuchy wskazane przez n poczatkowych elementów tablicy indices.
 void print_t2D_ind(const char (*ptr)[STRLEN_MAX], const size_t *pindices, size_t n) {
 //void print_t2D_ind(const char ptr[][STRLEN_MAX], const size_t indices[], size_t n) {
+    for(int i = 0;i < n;i++)
+    {
+        for(int j = 0;j < pindices[i];j++)
+        {
+            printf("%c",ptr[i][j]);   
+        }
+    }
 }
 
 // Funkcja wypisuje w osobnych liniach n łańcuchów wskazywanych przez elementy tablicy ptab.
 void print_ptab(char *ptab[], size_t n) {
+  int j = 0;
+  for(int i = 0;i < n;i++)
+  { 
+    j = 0;
+    while(ptab[i][j])printf("%c",ptab[i][j]);
+    printf("\n");
+  }
 }
 
 // 5.1.2
@@ -43,13 +87,13 @@ void print_ptab(char *ptab[], size_t n) {
 
 void mat_product(const double A[][SIZE], const double B[][SIZE], double AB[][SIZE], size_t m, size_t p, size_t n) 
 {
-    for(int i = 0;i < m;i++)
+    for(int i = 0;i < n;i++)
     {
-        for(int j = 0;j < n;j++)
+        for(int j = 0;j < m;j++)
         {
             for(int k = 0;k < p;k++)
             {
-                AB[i][j] = A[i][p] * B[j][p];
+                AB[i][j] = A[i][k] * B[k][j];
             }
         }
     }
@@ -63,6 +107,31 @@ void mat_product(const double A[][SIZE], const double B[][SIZE], double AB[][SIZ
 // Zalozenie: funkcja gauss moze zmienic wartosci elementow tablicy A
 
 double gauss_simplified(double A[][SIZE], size_t n) {
+  int start_x=0, start_y=0;
+  double ans = 1,x,startval;
+  while(start_x < n && start_y < n)
+  {
+    startval = A[start_x][start_y];
+    ans *= startval;
+    if(!startval)
+    {
+      //ans = (double)nan;
+      break;
+    }
+    for(int i = start_y+1;i < n;i++)
+    {
+      x = A[start_x][i-1]/startval;
+      
+      A[start_x][i] = 0;
+      for(int j = start_x+1;j < n;j++)
+      {
+        A[j][i] -= x;
+      }
+    }
+    start_x++;
+    start_y++;
+  }
+  return ans;
 }
 
 void read_mat(double A[][SIZE], size_t m, size_t n) {
