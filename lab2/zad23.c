@@ -58,7 +58,7 @@ int main()
         tableB.len=0;
         tableB.out=0;
 	scanf("%d %d %d",&seed,&version,&max_conflicts);
-	int deck[52]; 
+	int deck[52];
         for(int i = 0;i < CARD_AMOUNT;i++)
         {
                 deck[i] = i;
@@ -69,10 +69,10 @@ int main()
                 queue_push(&deckA,deck[i]);
                 queue_push(&deckB,deck[i+CARD_AMOUNT/2]);
         }
-        // queue_print(&deckA);
-        // printf("\n");
-        // queue_print(&deckB);
-        // printf("\n");
+         queue_print(&deckA);
+         printf("\n");
+         queue_print(&deckB);
+         printf("\n");
         switch(version)
 	{
 		case 1:
@@ -113,10 +113,10 @@ int main()
 		case 0:
                         while(conflicts < max_conflicts && queue_state(&deckA)!=0 && queue_state(&deckB)!=0)
                         {
-                                // printf("\n%d : %d\n",cardA,cardB);
-                                // queue_print(&deckB);
-                                // printf("\n");
-                                // queue_print(&deckA);
+                                 printf("\n%d : %d\n",cardA,cardB);
+                                 queue_print(&deckB);
+                                 printf("\n");
+                                 queue_print(&deckA);
                                 if(!war)
                                 {
                                         if(queue_state(&deckA)==0 && queue_state(&tableA)==0)
@@ -167,7 +167,7 @@ int main()
                         }
                         break;
 		default:
-			printf("Podaj liczbę 0 lub 1!");	
+			printf("Podaj liczbę 0 lub 1!");
                         break;
         }
         while(queue_state(&tableB)!=0)
@@ -232,3 +232,5 @@ void queue_print(struct Deck *deck)
                 printf("%d ",deck->array[ i ]);
         }
 }
+
+

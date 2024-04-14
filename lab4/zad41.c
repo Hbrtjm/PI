@@ -51,20 +51,22 @@ void wc(int *nl, int *nw, int *nc, FILE *stream)
     *nl = 0;
     *nw = 0;
     *nc = 0;
-    int flag = 0;
 	char character, prevch;
 	while ((character = fgetc(stream)) != EOF)
 	{
-        if(character == '\n')
-            (*nl)++;
-        if(flag == 0 && character >= FIRST_CHAR && character <= LAST_CHAR){
-            flag = IN_WORD;
-            (*nw)++;
-        }
-
-        if(flag != 0 && (character == ' ' || character == '\n' || character == '\t')){
-            flag = 0;
-        }
+		switch (character)
+		{
+		case ' ':
+		    if(prevch != ' ')
+                *nw += 1;
+            break;
+		case NEWLINE:
+		    *nw += 1;
+			*nl += 1;
+			break;
+		default:
+			break;
+		}
 		*nc += 1;
 		prevch = character;
 	}
