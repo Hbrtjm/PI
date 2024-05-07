@@ -10,6 +10,72 @@ typedef struct {
 	int second;
 } pair;
 
+/*
+
+Incorrect program output
+--- Input ---
+ 1 15
+5 5
+5 6
+8 9
+5 7
+6 6
+6 7
+6 8
+6 9
+5 9
+7 7
+7 9
+7 8
+8 8
+9 9
+5 8
+
+--- Program output ---
+1 0 1 1 1 1
+
+--- Expected output (numbers)---
+1 0 0 1 0 1
+
+Test 3: 2.1
+Incorrect program output
+--- Input ---
+ 2 14
+5 5
+8 9
+5 7
+6 6
+6 7
+6 8
+6 9
+5 9
+7 7
+7 9
+7 8
+8 8
+9 9
+5 8
+
+--- Program output ---
+1 1
+5
+5 6 7 8 9 
+1
+9 
+2
+5 6 
+
+--- Expected output (numbers)---
+1 0
+5
+5 6 7 8 9
+1
+9
+2
+5 6
+*/
+
+
 // Add pair to existing relation if not already there
 int add_relation (pair*, int, pair);
 
@@ -62,33 +128,26 @@ int composition (pair*, int, pair*, int, pair*);
 // Comparator for pair
 int cmp_pair (const void *a, const void *b) 
 {
-    pair *first_pair = (pair *) a;
-    pair *second_pair = (pair *) b;
-    if (*first_pair.first > *second_pair.first)
-    {
-        return first_pair;
+    pair first_pair = *((pair*)a);
+    pair second_pair = *((pair*)b);
+
+    if(first_pair.first > second_pair.first){
+        return 1;
+    } else if(first_pair.first == second_pair.first){
+        if(first_pair.second > second_pair.second)
+            return 1;
+        else
+            return -1;
+    } else {
+        return -1;
     }
-    else if(*first_pair.first < *second_pair.firs)
-    {
-        return second_pair;
-    }
-    else
-    {
-        if(*first_pair.second < *second_pair.second)
-        {
-            return first_pair; 
-        }
-        else if(*first_pair.second > *second_pair.second)
-        {
-            return second_pair; 
-        }
-    }
-    return first_pair;
 }
 
 // Add pair to existing relation if not already there
 int add_relation (pair *graph, int n, pair new_pair) {
     int flag = 0;
+    if(n == MAX_REL_SIZE)
+        return n;
     // pair *new_graph = malloc(sizeof(pair) * (n+1));
     for(int i = 0;i < n;i++)
     {
@@ -104,12 +163,14 @@ int add_relation (pair *graph, int n, pair new_pair) {
 // Read number of pairs, n, and then n pairs of ints
 // Obviously unsafe
 int read_relation(pair *relation) {
-    int n;
-    scanf("%d",n);
-    for(int i = 0;i < n;i++)
-    {
-        scanf("%d%d",relation[i].first,relation[i].second);
+    int n, element1, element2;
+    scanf("%d", &n);
+    if (n > MAX_REL_SIZE) n = MAX_REL_SIZE;  // Limit n to MAX_REL_SIZE to prevent overflow
+    for (int i = 0; i < n; i++) {
+        scanf("%d %d", &element1, &element2);
+        add_relation(relation, i, (pair){element1, element2});
     }
+    return n;
 }
 
 
@@ -117,8 +178,9 @@ void print_int_array(int *array, int n) {
     printf("%d\n",n);
     for(int i = 0;i < n;i++)
     {
-        printf("%d",array[i]);
+        printf("%d ",array[i]);
     }
+    printf("\n");
 }
 
 int main(void) {
@@ -165,52 +227,48 @@ int main(void) {
 	return 0;
 }
 
-// This can be done in O(log(n)) if graph is sorted
+// Case 1:
 
 int is_connected(pair *graph,int n)
 {
     int flag = 1;
-    int domain;
+    int domain[MAX_REL_SIZE];
     int domain_size = get_domain(graph,n,domain);
     for(int i = 0;i < domain_size;i++)
     {
-        for(int j = i;j < domain_size;j++)
+        for(int j = 0;j < domain_size;j++)
         {
+            flag = 1;
             for(int k = 0; k < n;k++)
             {
-                if(graph[k].first == domain[i] && graph[k].second == domain[j] || graph[k].first == domain[j] && graph[k].second == domain[i])
+                if((graph[k].first == domain[i] && graph[k].second == domain[j]) || (graph[k].first == domain[j] && graph[k].second == domain[i]))
                 {
                     flag = 0;
                 }
             }
-        }
         if(flag)
         {
             return 0;
+        }
         }
     }
     return 1;
 }
 
-int get_domain(pair *graph,int n, int *domain)
-{
-}
 
 int is_reflexive(pair *graph, int n)
 {
     int flag = 1; 
-    // qsort(graph,n,sizeof(pair),cmp);
-    for(int i = 0;i < n;i++)
+    int domain[MAX_REL_SIZE];
+    int domain_size = get_domain(graph, n, domain);
+    for(int i = 0;i < domain_size;i++)
     {
         flag = 1;
         for(int j = 0;j < n;j++)
         {
-            if(i != j)
+            if(domain[i] == graph[j].first && domain[i] == graph[j].second)
             {
-                if(graph[i].first == graph[j].second && graph[j].first == graph[j].second)
-                {
-                    flag = 0;
-                }
+                flag = 0;
             }
         }
         if(flag)
@@ -224,17 +282,16 @@ int is_reflexive(pair *graph, int n)
 int is_irreflexive(pair *graph, int n)
 {
     int flag = 1; 
+    int domain[MAX_REL_SIZE];
+    int domain_size = get_domain(graph, n, domain);
     // qsort(graph,n,sizeof(pair),cmp);
-    for(int i = 0;i < n;i++)
+    for(int i = 0;i < domain_size;i++)
     {
         for(int j = 0;j < n;j++)
         {
-            if(i != j)
+            if(domain[i] == graph[j].first && domain[i] == graph[j].second)
             {
-                if(graph[i].first == graph[j].second && graph[j].first == graph[j].second)
-                {
-                    return 0;
-                }
+                return 0;
             }
         }
     }
@@ -246,6 +303,7 @@ int is_symmetric(pair *graph,int n)
     int flag = 1;
     for(int i = 0;i < n;i++)
     {
+        flag = 1;
         for(int j = 0;j < n;j++)
         {
             if(graph[i].first == graph[j].second && graph[i].second == graph[j].first)
@@ -344,20 +402,21 @@ int is_total_order(pair *graph,int n)
 
 int find_max_elements(pair *graph,int n,int *max_elements)
 {
-    int max_elements_iterator = 0,flag;
-    for(int i = 0;i < n;i++)
+    int max_elements_iterator = 0,flag, domain[MAX_REL_SIZE];
+    int domain_size = get_domain(graph,n,domain);
+    for(int i = 0;i < domain_size;i++)
     {
         flag = 1;
         for(int j = 0;j < n;j++)
         {
-            if(graph[i].second == graph[j].first)
+            if(domain[i] == graph[j].first && domain[i] != graph[j].second)
             {
                 flag = 0;
             }
         }
         if(flag)
         {
-            max_elements[max_elements_iterator] = graph[i].second;
+            max_elements[max_elements_iterator] = domain[i];
             max_elements_iterator++;
         }
     }
@@ -366,55 +425,65 @@ int find_max_elements(pair *graph,int n,int *max_elements)
 
 int find_min_elements(pair *graph,int n,int *min_elements)
 {
-    int min_elements_iterator = 0,flag;
-    for(int i = 0;i < n;i++)
+    int min_elements_iterator = 0,flag, domain[MAX_REL_SIZE];
+    int domain_size = get_domain(graph,n,domain);
+    for(int i = 0;i < domain_size;i++)
     {
         flag = 1;
         for(int j = 0;j < n;j++)
         {
-            if(graph[i].first == graph[j].second)
+            if(domain[i] == graph[j].second && domain[i] != graph[j].first)
             {
                 flag = 0;
             }
         }
         if(flag)
         {
-            min_elements[min_elements_iterator] = graph[i].second;
+            min_elements[min_elements_iterator] = domain[i];
             min_elements_iterator++;
         }
     }
     return min_elements_iterator;
 }
 
-int find_domain(pair *graph, int n, int *domain)
+int get_domain(pair *graph, int n, int *domain)
 {
-    int m = 0, tab[MAX_RANGE] = 0;
+    int count = 0, tab[MAX_RANGE] = { 0 };
     for(int i = 0;i < n;i++)
     {
-        tab[domain[i].first]++;
-        tab[domain[i].second]++;
+        tab[graph[i].first]++;
+        tab[graph[i].second]++;
     }
     for(int i = 0;i < MAX_RANGE;i++)
     {
         if(tab[i] > 0)
         {
-            domain[m] = i;
-            m++;
+            domain[count] = i;
+            count++;
         }
     }
-    return m;
+    return count;
 }
 
 int composition(pair *R, int n1, pair *S, int n2,pair *S_o_R)
 {
-    int compositioned = 0;
+    int compositioned = 0,doesnt_include=1;
     for(int i = 0;i < n1;i++)
     {
         for(int j = 0;j < n2;j++)
         {
-            if(R[i].first == S[j].second)
+            if(R[i].second == S[j].first)
             {
-                compositioned++;
+                doesnt_include = 1;
+                for(int k = 0; k < compositioned; k++){
+                    if(S_o_R[k].first == R[i].first  && S_o_R[k].second == S[j].second)
+                        doesnt_include = 0;
+                }
+                if(doesnt_include)
+                {
+                    S_o_R[compositioned] = (pair){R[i].first, S[j].second};
+                    compositioned++;
+                }
             }
         }
     }

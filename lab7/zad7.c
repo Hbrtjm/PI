@@ -248,44 +248,45 @@
 
     // Obliczanie calek wielokrotnych
 
-    // Oblicza calke potrojna "nad" prostopadloscianem z predykatem wykluczajacym jego czesci (jezeli boundary != NULL).
-    // Metoda prostokatow wstecz (rightpoint) wzdluz kazdej zmiennej.
-    double trpl_quad_rect(FuncNvFp f, const double variable_lim[][2], const int tn[], BoundNvFp boundary) 
-    { 
-    double dx = (variable_lim[0][1] - variable_lim[0][0])/tn[0];
-    double dy = (variable_lim[1][1] - variable_lim[1][0])/tn[1];
-    double dz = (variable_lim[2][1] - variable_lim[2][0])/tn[2];
+double quad_rect_right3(FuncNvFp f, double a, double b, double *vars, int len, int n, BoundNvFp boundary) {
+    double h=(b-a)/n,suma=0.0;
+    vars[len-1]=a;
+    for (int i=0; i<n; i++){
+        vars[len-1]+=h;
+        if (boundary==NULL || boundary(vars,len))
+            suma+=h*f(vars,len);
+    }
+    return suma;
+}
 
-    double integral = 0;
-
-    double xi = variable_lim[0][0];
-    for(int x = 0; x < tn[0]; x++){
-        xi += dx;
-        double yi = variable_lim[1][0];
-
-        for(int y = 0; y < tn[1]; y++){
-            yi += dy;
-            double zi = variable_lim[2][0];
-            for(int z = 0; z < tn[2]; z++){
-                zi += dz;
-
-                double v[3] =  {xi, yi, zi};
-
-                if((boundary != NULL && boundary(v, 3) != 0 ) || boundary == NULL)
-                    integral += f(v, 3);
-            }
+double trpl_quad_rect(FuncNvFp f, const double variable_lim[][2], const int tn[], BoundNvFp boundary) 
+{     
+    double x, y, z, hx, hy, hz, suma1 = 0.0, suma2 = 0.0;
+    x = variable_lim[0][0];
+    y = variable_lim[1][0];
+    hx = (variable_lim[0][1] - x) / tn[0];
+    hy = (variable_lim[1][1] - y) / tn[1];
+    double vars[3] = {x, y};
+    for (int i = 0; i < tn[0]; i++) {
+        vars[0] = x + (i + 1) * hx;
+        suma2 = 0.0;
+        for (int j = 0; j < tn[1]; j++) {
+            vars[1] = y + (j + 1) * hy; // Use right endpoint for y
+            suma2 += hy * quad_rect_right3(f, variable_lim[2][0], variable_lim[2][1], vars, 3, tn[2], boundary);
         }
+        suma1 += hx * suma2;
     }
+    return suma1;
+}
 
-    return dy*dz*dx*integral;
-    }
 
     // Oblicza calke wielokrotna (funkcji n zmiennych) "nad" n wymiarowym hiperprostopadloscianem z predykatem wykluczajacym jego czesci (jezeli boundary != NULL).
     // Metoda prostokatow midpoint wzdluz kazdej zmiennej.
     void recur_quad_rect_mid(double *psum, FuncNvFp f, int variable_no, double tvariable[], const double variable_lim[][2], const int tn[], int level, BoundNvFp boundary) 
     {
+        #define VARIABLE_NO variable_no
         if(variable_no == level){
-        double v[variable_no];
+        double v[VARIABLE_NO];
         for(int i = 0; i < variable_no; i++){
             v[i] = tvariable[i];
         }
@@ -355,7 +356,7 @@
             scanf("%lf %lf %d",&y1,&y2,&ny);
             printf("%.5f\n",dbl_integr_normal_n(func2v_2, x1, x2, nx, y1, y2, ny, lower_bound2, upper_bound2));
             break;
-        case 6: // 7.3.1 calka potrojna po prostopadloscianie
+        case 6: // w7.3.1 calka potrojna po prostopadloscianie
             if(TEST) printf("Wpisz przedzial calkowania i liczbe podprzedzialow 1. zmiennej: ");
             scanf("%lf %lf %d",&variable_lim[0][0],&variable_lim[0][1],tn);
             if(TEST) printf("Wpisz przedzial calkowania i liczbe podprzedzialow 2. zmiennej: ");
