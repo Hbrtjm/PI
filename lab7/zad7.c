@@ -356,7 +356,7 @@ double trpl_quad_rect(FuncNvFp f, const double variable_lim[][2], const int tn[]
             scanf("%lf %lf %d",&y1,&y2,&ny);
             printf("%.5f\n",dbl_integr_normal_n(func2v_2, x1, x2, nx, y1, y2, ny, lower_bound2, upper_bound2));
             break;
-        case 6: // w7.3.1 calka potrojna po prostopadloscianie
+        case 6: // 7.3.1 calka potrojna po prostopadloscianie
             if(TEST) printf("Wpisz przedzial calkowania i liczbe podprzedzialow 1. zmiennej: ");
             scanf("%lf %lf %d",&variable_lim[0][0],&variable_lim[0][1],tn);
             if(TEST) printf("Wpisz przedzial calkowania i liczbe podprzedzialow 2. zmiennej: ");
