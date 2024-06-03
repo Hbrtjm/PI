@@ -1,0 +1,122 @@
+Failed tests
+Test 3: zad2 1
+Test 4: zad2 2
+Test 5: zad3 1
+Test 6: zad3 2
+Test 7: zad4
+Test 3: zad2 1
+Incorrect program output
+--- Input ---
+
+ 2
+5
+12 25 34 6 19 17 29 56 7 32 10 12 11
+5 42 9 19 55 13
+7 9 7 3 5 2 1 8
+3 0 -7 -24
+9 22 -30 9 15 1 6 8 33 99
+7 1 2 3 11 12 13 18
+
+
+--- Program output ---
+
+34 6 19 11 42 9 7 
+
+
+--- Expected output (numbers)---
+
+25 34 6 12 11 42 9
+
+
+Test 4: zad2 2
+Incorrect program output
+--- Input ---
+
+ 2
+4
+6 56 7 32 10 12 11
+5 25 34 6 19 17
+8 2 1 8	3 9 7 3 5
+3 35 12 -1
+10 1 2 3 11 12 13 18 5 4 10
+
+
+--- Program output ---
+
+7 32 10 2 1 8 5 11 12 17 
+
+
+--- Expected output (numbers)---
+
+56 7 32  17 2 1 3 12 10 19
+
+
+Test 5: zad3 1
+Program terminated but unknown reason.
+Incorrect program output
+--- Input ---
+
+ 3
+5
+12 25 34 6 19 17 29 56 7 32 10 12 11
+5 42 9 19 55 13
+7 9 7 3 5 2 1 8
+3 0 -7 -24
+9 22 -30 9 15 1 6 8 33 99
+7 1 2 3 11 12 13 18
+
+
+--- Program output ---
+
+--- Expected output (numbers)---
+
+99 33 8 -7 0 8 7
+
+
+Test 6: zad3 2
+Program terminated but unknown reason.
+Incorrect program output
+--- Input ---
+
+ 3
+4
+6 56 7 32 10 12 11
+5 25 34 6 19 17
+8 2 1 8	3 9 7 3 5
+3 35 12 -1
+10 1 2 3 11 12 13 18 5 4 10
+
+
+--- Program output ---
+
+--- Expected output (numbers)---
+
+-1 12 35 2 17 19 12 3 5 1
+
+
+Test 7: zad4
+Program terminated but unknown reason.
+Incorrect program output
+--- Input ---
+
+4
+5
+12 25 34 6 19 17 29 56 7 32 10 12 11
+5 42 9 19 55 13
+7 9 7 3 5 2 1 8
+3 0 -7 -24
+9 22 -30 9 15 1 6 8 33 99
+10 1 2 3 11 12 13 18 18 18 18
+
+
+--- Program output ---
+
+--- Expected output (text)---
+
+
+-> 34 19 29 56 7 32 10 12 11
+-> 42 19 13
+-> 7 3 5 2 1
+-> 22 -30 9 15 1 6 8 33 99
+
+
